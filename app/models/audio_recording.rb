@@ -1,0 +1,2 @@
+class AudioRecording < ApplicationRecord
+end
