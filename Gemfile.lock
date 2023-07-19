@@ -182,11 +182,11 @@ DEPENDENCIES
   bootsnap
   debug
   json (~> 2.5)
-  pg (~> 1.1)
-  puma (~> 5.0)
+  pg
+  puma
   rails (~> 7.0.6)
   tzinfo-data
-  will_paginate (~> 4.0)
+  will_paginate
 
 RUBY VERSION
    ruby 3.2.2p53

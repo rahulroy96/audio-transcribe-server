@@ -82,11 +82,19 @@ test:
 production:
   <<: *default
   database: audio_transcription_server_production
-  username: audio_transcription_server
-  password: <%= ENV["AUDIO_TRANSCRIPTION_SERVER_DATABASE_PASSWORD"] %>
+  # username: audio_transcription_server
+  # password: <%= ENV["AUDIO_TRANSCRIPTION_SERVER_DATABASE_PASSWORD"] %>
+  # # database: <%= ENV['RDS_DB_NAME'] %>
+  # username: <%= ENV['RDS_USERNAME'] %>
+  # password: <%= ENV['RDS_PASSWORD'] %>
+  # host: <%= ENV['RDS_HOSTNAME'] %>
+  # port: <%= ENV['RDS_PORT'] %>
+
+  # database: <%= ENV['RDS_DB_NAME'] %>
+  username: <%= Rails.application.credentials.dig(:postgres_rds, :username) %>
+  password: <%= Rails.application.credentials.dig(:postgres_rds, :password) %>
+  host: <%= Rails.application.credentials.dig(:postgres_rds, :host) %>
+  port: <%= Rails.application.credentials.dig(:postgres_rds, :port) %>
+
+
   
-  database: <%= ENV['RDS_DB_NAME'] %>
-  username: <%= ENV['RDS_USERNAME'] %>
-  password: <%= ENV['RDS_PASSWORD'] %>
-  host: <%= ENV['RDS_HOSTNAME'] %>
-  port: <%= ENV['RDS_PORT'] %>
