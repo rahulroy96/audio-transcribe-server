@@ -12,7 +12,7 @@ class Api::V1::AudioRecordingController < ApplicationController
     def show
         @audio_recording = AudioRecording.find(params[:id])
 
-        render json: @audio_recording, status: :ok
+        render json: { 'data': @audio_recording, 'url': url_for(@audio_recording.audio_data) }, status: :ok
     end
 
     def update
@@ -65,11 +65,16 @@ class Api::V1::AudioRecordingController < ApplicationController
         # end
 
         @audio_recording.audio_data.attach(params[:audio_data])
-        @audio_recording.audio_url = url_for(@audio_recording.audio_data)
+        @audio_recording.audio_url = @audio_recording.audio_data.url
+
+        p @audio_recording.audio_data.url
+
+        p "audio-transcription-movious"
 
         if @audio_recording.save
-            render json: { message: "File uploaded successfully", url: url_for(@audio_recording.audio_data) }, status: :created
+            render json: { message: "File uploaded successfully", transcription:"", id: @audio_recording.id, url: @audio_recording.audio_data.url }, status: :created
         else
+            p @audio_recording.errors
             render json: @audio_recording.errors, status: :unprocessable_entity
         end
     end

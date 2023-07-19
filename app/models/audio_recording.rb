@@ -5,10 +5,10 @@ class AudioRecording < ApplicationRecord
 end
 
 def validate_audio_data
-    # p "cotent type is "
-    # p audio_data.content_type
+    p "cotent type is "
+    p audio_data.content_type
     return unless audio_data.attached?
-    unless audio_data.content_type.in?(["audio/ogg"])
+    unless audio_data.content_type.in?(["audio/ogg", "video/quicktime"])
         errors.add(:audio_data, "must be an audio file")
     end 
 

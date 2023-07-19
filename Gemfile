@@ -7,10 +7,10 @@ ruby "3.2.2"
 gem "rails", "~> 7.0.6"
 
 # Use postgresql as the database for Active Record
-gem "pg", "~> 1.1"
+gem "pg"
 
 # Use the Puma web server [https://github.com/puma/puma]
-gem "puma", "~> 5.0"
+gem "puma"
 
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 # gem "jbuilder"
@@ -30,7 +30,9 @@ gem "tzinfo-data", platforms: %i[ mingw mswin x64_mingw jruby ]
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 
-gem 'will_paginate', '~> 4.0'
+gem "aws-sdk-s3", require: false
+
+gem 'will_paginate'
 
 gem "json", "~> 2.5"
 
