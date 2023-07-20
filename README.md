@@ -3,8 +3,8 @@
 * Ruby version: 3.2.2
 
 * Database creation 
-- Uses postgres as database 
-- Update the DBUSER, DBPASS, DBHOST, DBNAME values in the credentials file (Use EDITOR=vim rails credentials:edit command to edit)
+- Uses Postgres as the database 
+- Update the DBUSER, DBPASS, DBHOST, and DBNAME values in the credentials file (Use EDITOR=vim rails credentials:edit command to edit)
 - Now the required db can be created by running rake db:migrate.
 
 * Database initialization: Run rake db:seed
@@ -12,7 +12,7 @@
 * How to run: Run rails s
 
 # Implementation Details
-The Frontend calls the api with audio data. The audio data gets stored in S3 and an external call is amde to the Open AI transcription service. The s3 link along with the transcription receivec from the service is stored in the postgres DB. We also have endpoints defined for  getting all the recordings, get particuler recording, delete a recording and also to update the recordings. Rails active storage is used for attaching the audio file to theAudioRecordings model. The will_paginate package is used to paginate the response while fetching the list of recordings from db.
+The Frontend calls the API with audio data. The audio data gets stored in S3 and an external call is made to the Open AI transcription service. The s3 link along with the transcription received from the service is stored in the Postgres DB. We also have endpoints defined for getting all the recordings, getting particular recordings, deleting a recording, and also to update the recordings. Rails active storage is used for attaching the audio file to the AudioRecording model. The will_paginate package is used to paginate the response while fetching the list of recordings from db.
 
 ## Architecture
 
