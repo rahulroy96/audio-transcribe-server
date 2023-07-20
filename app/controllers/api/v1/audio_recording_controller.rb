@@ -32,12 +32,32 @@ class Api::V1::AudioRecordingController < ApplicationController
             "message": "deleted"
         }, status: :ok
     end
+
+    def destroy
+        @audio_recording = AudioRecording.find(params[:id])
+    
+        if @audio_recording.audio_data.attached?
+            @audio_recording.destroy
+            render json: {
+                "message": "deleted"
+            }, status: :ok
+        else
+            render json: {
+                "message": "no attached audio data found"
+            }, status: :not_found
+        end
+    end
   
     def show
-        @audio_recording = AudioRecording.find(params[:id])
-        # @audio_recording.audio_url = url_for(@audio_recording.audio_data)
-
-        render json: { 'data': @audio_recording, 'url': @audio_recording.audio_data.url }, status: :ok
+        @audio_recording = AudioRecording.find_by(id: params[:id])
+    
+        if @audio_recording.nil?
+            render json: { message: "Audio recording not found" }, status: :not_found
+        elsif @audio_recording.audio_data.attached?
+            render json: { 'data': @audio_recording, 'url': @audio_recording.audio_data.url }, status: :ok
+        else
+            render json: { message: "Audio data not attached to the recording" }, status: :not_found
+        end
     end
 
     def update
