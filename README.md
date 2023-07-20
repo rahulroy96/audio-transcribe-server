@@ -1,10 +1,5 @@
 # README
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
-
-Things you may want to cover:
-
 * Ruby version: 3.2.2
 
 * Database creation 
@@ -20,6 +15,8 @@ Things you may want to cover:
 The Frontend calls the api with audio data. The audio data gets stored in S3 and an external call is amde to the Open AI transcription service. The s3 link along with the transcription receivec from the service is stored in the postgres DB. We also have endpoints defined for  getting all the recordings, get particuler recording, delete a recording and also to update the recordings. Rails active storage is used for attaching the audio file to theAudioRecordings model. The will_paginate package is used to paginate the response while fetching the list of recordings from db.
 
 ## Architecture
+
+![architecture](https://github.com/rahulroy96/audio-transcribe-server/assets/20977374/77eb0432-eb95-4625-b1f7-6c8789cab6c1)
 
 
 * ...
