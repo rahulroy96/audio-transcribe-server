@@ -55,7 +55,36 @@ class Api::V1::AudioRecordingController < ApplicationController
     end
 
     def create
-    
+        transcription = TranscriptionService.new(params['audio_data']).transcribe
+
+        return render json: {message: "Transcription service failed"}, status: :unprocessable_entity unless transcription
+
+        @audio_recording = AudioRecording.new(transcription: transcription)
+
+        @audio_recording.audio_data.attach(params[:audio_data])
+
+        if @audio_recording.save
+            render json: { message: "File uploaded successfully", transcription: @audio_recording.transcription, id: @audio_recording.id, url: @audio_recording.audio_data.url }, status: :created
+        else
+            render json: @audio_recording.errors, status: :unprocessable_entity
+        end
+    end
+
+    private
+    def audio_recording_params
+      params.permit(:name, :category, :audio_url, :transcription, :comments)
+    end
+end
+
+
+# The transcription service used to convert the audio to text
+# Currrently we are using open ai whisper for the same.
+class TranscriptionService
+    def initialize(audio_data)
+        @audio_data = audio_data
+    end
+
+    def transcribe
         require "uri"
         require "net/http"
 
@@ -67,39 +96,17 @@ class Api::V1::AudioRecordingController < ApplicationController
         request = Net::HTTP::Post.new(url)
         
         request["Authorization"] = "Bearer " + Rails.application.credentials.openai.access_key
-        form_data = [['file', params['audio_data']],['model', 'whisper-1']]
+        form_data = [['file', @audio_data],['model', 'whisper-1']]
         request.set_form form_data, 'multipart/form-data'
         response = https.request(request)
                               
-        @audio_recording = AudioRecording.new
-        
         # Check if the request was successful
         if response.is_a?(Net::HTTPSuccess)
             # Process the response body
             data = JSON.parse(response.body)
-            @audio_recording.transcription = data["text"]
-            puts response.body
+            return data["text"]
         else
-            puts "Request failed with status #{response.code}: #{response.message}"
-            render json: {message: "Transcription service failed"}, status: :unprocessable_entity
-            return
+            return nil
         end
-
-        @audio_recording.audio_data.attach(params[:audio_data])
-        @audio_recording.audio_url = @audio_recording.audio_data.url
-
-        p @audio_recording.audio_data.url
-
-        if @audio_recording.save
-            render json: { message: "File uploaded successfully", transcription: @audio_recording.transcription, id: @audio_recording.id, url: @audio_recording.audio_data.url }, status: :created
-        else
-            p @audio_recording.errors
-            render json: @audio_recording.errors, status: :unprocessable_entity
-        end
-    end
-
-    private
-    def audio_recording_params
-      params.permit(:name, :category, :audio_url, :transcription, :comments)
     end
 end
