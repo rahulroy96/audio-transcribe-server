@@ -36,43 +36,42 @@ class Api::V1::AudioRecordingController < ApplicationController
 
     def create
     
-        # require "uri"
-        # require "net/http"
+        require "uri"
+        require "net/http"
 
-        # url = URI("https://api.openai.com/v1/audio/transcriptions")
+        url = URI("https://api.openai.com/v1/audio/transcriptions")
 
-        # https = Net::HTTP.new(url.host, url.port)
-        # https.use_ssl = true
+        https = Net::HTTP.new(url.host, url.port)
+        https.use_ssl = true
 
-        # request = Net::HTTP::Post.new(url)
+        request = Net::HTTP::Post.new(url)
         
-        # request["Authorization"] = "Bearer " + Rails.application.credentials.openai.access_key
-        # form_data = [['', params['audio_data']],['model', 'whisper-1']]
-        # request.set_form form_data, 'multipart/form-data'
-        # response = https.request(request)
+        request["Authorization"] = "Bearer " + Rails.application.credentials.openai.access_key
+        form_data = [['file', params['audio_data']],['model', 'whisper-1']]
+        request.set_form form_data, 'multipart/form-data'
+        response = https.request(request)
                               
         @audio_recording = AudioRecording.new
         
-        # # Check if the request was successful
-        # if response.is_a?(Net::HTTPSuccess)
-        #     # Process the response body
-        #     @audio_recording.transcription = response.body.data
-        #     puts response.body
-        # else
-        #     puts "Request failed with status #{response.code}: #{response.message}"
-        #     render json: {message: "Transcription service failed"}, status: :unprocessable_entity
-        #     return
-        # end
+        # Check if the request was successful
+        if response.is_a?(Net::HTTPSuccess)
+            # Process the response body
+            data = JSON.parse(response.body)
+            @audio_recording.transcription = data["text"]
+            puts response.body
+        else
+            puts "Request failed with status #{response.code}: #{response.message}"
+            render json: {message: "Transcription service failed"}, status: :unprocessable_entity
+            return
+        end
 
         @audio_recording.audio_data.attach(params[:audio_data])
         @audio_recording.audio_url = @audio_recording.audio_data.url
 
         p @audio_recording.audio_data.url
 
-        p "audio-transcription-movious"
-
         if @audio_recording.save
-            render json: { message: "File uploaded successfully", transcription:"", id: @audio_recording.id, url: @audio_recording.audio_data.url }, status: :created
+            render json: { message: "File uploaded successfully", transcription: @audio_recording.transcription, id: @audio_recording.id, url: @audio_recording.audio_data.url }, status: :created
         else
             p @audio_recording.errors
             render json: @audio_recording.errors, status: :unprocessable_entity
