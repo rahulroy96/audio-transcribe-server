@@ -20,31 +20,14 @@ class Api::V1::AudioRecordingController < ApplicationController
     end
 
     def destroy
-        # @audio_recording = AudioRecording.find(params[:id])
-        # @audio_recording.destroy();
-        @audio_recordings = AudioRecording.all()
-        @audio_recordings.each do |audio_recording|
-            if audio_recording.audio_data.attached?
-                audio_recording.destroy()
-            end
-          end
-        render json: {
-            "message": "deleted"
-        }, status: :ok
-    end
-
-    def destroy
-        @audio_recording = AudioRecording.find(params[:id])
+        @audio_recording = AudioRecording.find_by(id: params[:id])
     
-        if @audio_recording.audio_data.attached?
-            @audio_recording.destroy
-            render json: {
-                "message": "deleted"
-            }, status: :ok
+        if @audio_recording.nil?
+            render json: { "message": "no data found" }, status: :not_found
         else
-            render json: {
-                "message": "no attached audio data found"
-            }, status: :not_found
+            @audio_recording.destroy
+            render json: { "message": "deleted" }, status: :ok
+
         end
     end
   
