@@ -106,7 +106,11 @@ class TranscriptionService
             data = JSON.parse(response.body)
             return data["text"]
         else
+            puts "Request failed with status #{response.code}: #{response.message}"
             return nil
         end
+    rescue => e
+        puts "Error: #{e.message}"
+        return nil
     end
 end
