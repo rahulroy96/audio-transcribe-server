@@ -23,5 +23,17 @@ module AudioTranscriptionServer
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
+
+    config.middleware.insert_before 0, Rack::Cors do
+      allow do
+        origins '127.0.0.1:3000', /\Ahttp:\/\/localhost(:\d+)?\z/, /\Ahttp:\/\/127\.0\.0\.\d{1,3}(:\d+)?\z/, /\Ahttp:\/\/127\.0\.0\.\d{1,3}(:\d+)?\z/, /\Ahttp:\/\/192\.168\.0\.\d{1,3}(:\d+)?\z/
+        # The regular expression above allows CORS for all IPs starting with 192.168.0.
+
+        resource '*', 
+          headers: :any, 
+          methods: [:get, :post, :put, :patch, :delete, :options, :head], 
+          credentials: true
+      end
+    end
   end
 end
