@@ -6,12 +6,12 @@ class Api::V1::AudioRecordingController < ApplicationController
     def index
       
       @audio_recordings = AudioRecording.order(created_at: :desc).paginate(page: params[:page], per_page: 15)
-
+    
       @audio_recordings.each do |audio_recording|
         if audio_recording.audio_data.attached?
             audio_recording.audio_url = audio_recording.audio_data.url
         end
-      end
+      end   
 
       total_pages = @audio_recordings.total_pages
   
@@ -23,8 +23,10 @@ class Api::V1::AudioRecordingController < ApplicationController
         @audio_recording = AudioRecording.find_by(id: params[:id])
     
         if @audio_recording.nil?
+            # If the audio recording is nill, return not found
             render json: { "message": "no data found" }, status: :not_found
         else
+            # Delete the recording and return status ok
             @audio_recording.destroy
             render json: { "message": "deleted" }, status: :ok
 
@@ -35,6 +37,7 @@ class Api::V1::AudioRecordingController < ApplicationController
         @audio_recording = AudioRecording.find_by(id: params[:id])
     
         if @audio_recording.nil?
+            # If the audio recording is nill, return not found
             render json: { message: "Audio recording not found" }, status: :not_found
         elsif @audio_recording.audio_data.attached?
             render json: { 'data': @audio_recording, 'url': @audio_recording.audio_data.url }, status: :ok
@@ -47,7 +50,7 @@ class Api::V1::AudioRecordingController < ApplicationController
         @audio_recording = AudioRecording.find(params[:id])
 
         if @audio_recording.update(audio_recording_params)
-            render json: { message: "Recording updated successfully", user: @audio_recording }, status: :ok
+            render json: { message: "Recording updated successfully", data: @audio_recording }, status: :ok
         else
             render json: { errors: @audio_recording.errors }, status: :unprocessable_entity
         end
@@ -63,8 +66,10 @@ class Api::V1::AudioRecordingController < ApplicationController
 
         @audio_recording.audio_data.attach(params[:audio_data])
 
+        @audio_recording.audio_url = @audio_recording.audio_data.url
+
         if @audio_recording.save
-            render json: { message: "File uploaded successfully", transcription: @audio_recording.transcription, id: @audio_recording.id, url: @audio_recording.audio_data.url }, status: :created
+            render json: { message: "File uploaded successfully", data: @audio_recording  }, status: :created
         else
             render json: @audio_recording.errors, status: :unprocessable_entity
         end
