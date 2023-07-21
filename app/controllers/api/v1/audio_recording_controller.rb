@@ -5,7 +5,7 @@ class Api::V1::AudioRecordingController < ApplicationController
 
     def index
       
-      @audio_recordings = AudioRecording.order(created_at: :desc).paginate(page: params[:page], per_page: 10)
+      @audio_recordings = AudioRecording.order(created_at: :desc).paginate(page: params[:page], per_page: 15)
 
       @audio_recordings.each do |audio_recording|
         if audio_recording.audio_data.attached?
