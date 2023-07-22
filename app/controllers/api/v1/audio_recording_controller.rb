@@ -40,7 +40,8 @@ class Api::V1::AudioRecordingController < ApplicationController
             # If the audio recording is nill, return not found
             render json: { message: "Audio recording not found" }, status: :not_found
         elsif @audio_recording.audio_data.attached?
-            render json: { 'data': @audio_recording, 'url': @audio_recording.audio_data.url }, status: :ok
+            @audio_recording.audio_url = @audio_recording.audio_data.url
+            render json: @audio_recording, status: :ok
         else
             render json: { message: "Audio data not attached to the recording" }, status: :not_found
         end
