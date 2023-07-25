@@ -4,30 +4,34 @@ class Api::V1::AudioRecordingController < ApplicationController
     end
 
     def index
-      
-      @audio_recordings = AudioRecording.order(created_at: :desc).paginate(page: params[:page], per_page: 15)
+        Rails.logger.info 'Processing index action'
+        @audio_recordings = AudioRecording.order(created_at: :desc).paginate(page: params[:page], per_page: 15)
     
-      @audio_recordings.each do |audio_recording|
-        if audio_recording.audio_data.attached?
-            audio_recording.audio_url = audio_recording.audio_data.url
-        end
-      end   
+        @audio_recordings.each do |audio_recording|
+            if audio_recording.audio_data.attached?
+                audio_recording.audio_url = audio_recording.audio_data.url
+            end
+        end   
 
-      total_pages = @audio_recordings.total_pages
-  
-      response.headers['X-Total-Pages'] = total_pages.to_s
-      render json: @audio_recordings, status: :ok
+        total_pages = @audio_recordings.total_pages
+    
+        response.headers['X-Total-Pages'] = total_pages.to_s
+        render json: @audio_recordings, status: :ok
+        Rails.logger.info 'Index action processed successfully'
     end
 
     def destroy
+        Rails.logger.info 'Processing destroy action'
         @audio_recording = AudioRecording.find_by(id: params[:id])
     
         if @audio_recording.nil?
             # If the audio recording is nill, return not found
+            Rails.logger.info("Attempted to delete audio recording with id #{params[:id]}, but no recording was found")
             render json: { "message": "no data found" }, status: :not_found
         else
             # Delete the recording and return status ok
             @audio_recording.destroy
+            Rails.logger.info("Audio recording with id #{params[:id]} was successfully deleted")
             render json: { "message": "deleted" }, status: :ok
 
         end
@@ -38,21 +42,29 @@ class Api::V1::AudioRecordingController < ApplicationController
     
         if @audio_recording.nil?
             # If the audio recording is nill, return not found
+            Rails.logger.info("Audio recording with id #{params[:id]} not found")
             render json: { message: "Audio recording not found" }, status: :not_found
         elsif @audio_recording.audio_data.attached?
+            Rails.logger.info("Audio recording with id #{params[:id]} found and has audio data attached")
             @audio_recording.audio_url = @audio_recording.audio_data.url
             render json: @audio_recording, status: :ok
         else
+            Rails.logger.info("Audio recording with id #{params[:id]} found but no audio data attached")
             render json: { message: "Audio data not attached to the recording" }, status: :not_found
         end
     end
 
     def update
-        @audio_recording = AudioRecording.find(params[:id])
+        @audio_recording = AudioRecording.find_by(id: params[:id])
 
-        if @audio_recording.update(audio_recording_params)
+        if @audio_recording.nil?
+            Rails.logger.info("Audio recording with id #{params[:id]} not found")
+            render json: { message: "Audio recording not found" }, status: :not_found
+        elsif @audio_recording.update(audio_recording_params)
+            Rails.logger.info("Audio recording with id #{params[:id]} was successfully updated")
             render json: { message: "Recording updated successfully", data: @audio_recording }, status: :ok
         else
+            Rails.logger.error("Audio recording with id #{params[:id]} update failed with errors: #{@audio_recording.errors.full_messages.join(', ')}")
             render json: { errors: @audio_recording.errors }, status: :unprocessable_entity
         end
 
@@ -70,8 +82,10 @@ class Api::V1::AudioRecordingController < ApplicationController
         @audio_recording.audio_url = @audio_recording.audio_data.url
 
         if @audio_recording.save
+            Rails.logger.info "The audio recording transcribed successfully and returned 201"
             render json: { message: "File uploaded successfully", data: @audio_recording  }, status: :created
         else
+            Rails.logger.error "Error while trying to save the audio recording #{@audio_recording.message}"
             render json: @audio_recording.errors, status: :unprocessable_entity
         end
     end
@@ -94,6 +108,8 @@ class TranscriptionService
         require "uri"
         require "net/http"
 
+        Rails.logger.info "Starting to transcribe the Audio data"
+
         url = URI(Rails.application.credentials.openai.url)
 
         https = Net::HTTP.new(url.host, url.port)
@@ -110,13 +126,14 @@ class TranscriptionService
         if response.is_a?(Net::HTTPSuccess)
             # Process the response body
             data = JSON.parse(response.body)
+            Rails.logger.info "Audio data transcribed successfully"
             return data["text"]
         else
-            puts "Request failed with status #{response.code}: #{response.message}"
+            Rails.logger.error "Request failed with status #{response.code}: #{response.message}"
             return nil
         end
     rescue => e
-        puts "Error: #{e.message}"
+        Rails.logger.error "Error: #{e.message}"
         return nil
     end
 end
